@@ -1,0 +1,22 @@
+# >>> Pega este bloque DENTRO de "services:" en /home/kqv/kqv-stack/docker-compose.yml
+#     (misma indentación que 'postgres', 'n8n', 'caddy'). NO expone puertos:
+#     Caddy lo enruta por la red interna kqv-net.
+  kqv-web:
+    build: ./kqv-web
+    image: kqv-web:latest
+    container_name: kqv-web
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      PGHOST: postgres
+      PGPORT: 5432
+      PGDATABASE: ${POSTGRES_DB}
+      PGUSER: ${POSTGRES_USER}
+      PGPASSWORD: ${POSTGRES_PASSWORD}
+      SESSION_SECRET: ${WEB_SESSION_SECRET}
+      NODE_ENV: production
+      PORT: 3000
+    networks:
+      - kqv-net

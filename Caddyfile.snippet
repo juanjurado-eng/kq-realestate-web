@@ -1,0 +1,11 @@
+# >>> Agrega este bloque AL FINAL de /home/kqv/kqv-stack/Caddyfile
+#     Caddy emitirá el certificado HTTPS de www automáticamente.
+
+www.kq-realestate.cloud {
+    reverse_proxy kqv-web:3000
+    encode gzip
+    log {
+        output stdout
+        format console
+    }
+}
