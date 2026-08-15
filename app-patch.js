@@ -4,6 +4,9 @@
    - Editor de propiedad: subir fotos por archivo + ORDENAR (drag / ◀ ▶).
    =================================================================== */
 
+/* WhatsApp del BOT de KQ (filtra consultas y agenda visitas). El de Karen humana queda para contacto general. */
+var WA_BOT = "https://wa.me/51948298776";
+
 /* ---------- Estilos del parche (tarjeta estilo minimalista) ---------- */
 (function injectPatchCSS(){
  if(document.getElementById('kqv-patch-css')) return;
@@ -53,11 +56,16 @@
  .pd2-spec small{font-size:10.5px;letter-spacing:.8px;text-transform:uppercase;color:var(--muted)}
  .pd2-body{padding-top:10px;padding-bottom:20px}
  .pd2-gallery{margin-bottom:14px}
- .pd2-main{position:relative;border-radius:12px;overflow:hidden;aspect-ratio:16/9;background:#141414;cursor:zoom-in}
+ .pd2-main{position:relative;border-radius:12px;overflow:hidden;aspect-ratio:16/9;max-height:60vh;background:#141414;cursor:zoom-in}
  .pd2-main img{width:100%;height:100%;object-fit:cover;transition:.45s}
  .pd2-main:hover img{transform:scale(1.03)}
- .pd2-zoom{position:absolute;top:12px;right:12px;width:38px;height:38px;border-radius:50%;background:rgba(20,20,20,.5);color:#fff;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(3px)}
+ .pd2-zoom{position:absolute;top:12px;right:12px;width:38px;height:38px;border-radius:50%;background:rgba(20,20,20,.5);color:#fff;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(3px);z-index:2}
  .pd2-zoom svg{width:18px;height:18px}
+ .pd2-garr{position:absolute;top:50%;transform:translateY(-50%);width:46px;height:46px;border-radius:50%;border:0;background:rgba(20,20,20,.48);color:#fff;font-size:26px;line-height:1;cursor:pointer;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(3px);opacity:.9;z-index:2;transition:.2s}
+ .pd2-garr:hover{opacity:1;background:rgba(20,20,20,.72)}
+ .pd2-garr-prev{left:14px}
+ .pd2-garr-next{right:14px}
+ @media(max-width:560px){ .pd2-garr{width:38px;height:38px;font-size:22px} .pd2-main{max-height:46vh} }
  .pd2-thumbsrow{display:flex;justify-content:space-between;align-items:center;gap:16px;margin-top:10px}
  .pd2-galhint{font-size:12px;color:var(--muted);white-space:nowrap;flex:0 0 auto}
  .pd2-thumbs{display:flex;gap:10px;overflow-x:auto;padding-bottom:4px}
@@ -188,7 +196,7 @@ function vProp(cod){
  <div class="wrap pd2-top">
    <a class="pd2-back" onclick="go('#/propiedades')">← Volver al catálogo</a>
    <div class="pd2-gallery">
-     <div class="pd2-main" onclick="pdLbOpen()"><img id="pd-main-img" src="${imgs[0]}" alt="${p.tit}"><span class="pd2-zoom">${zoomIco}</span>${hasFotos?'':'<span class="prev-tag">Fotos próximamente</span>'}</div>
+     <div class="pd2-main" onclick="pdLbOpen()"><img id="pd-main-img" src="${imgs[0]}" alt="${p.tit}"><span class="pd2-zoom">${zoomIco}</span>${imgs.length>1?`<button class="pd2-garr pd2-garr-prev" title="Anterior" onclick="event.stopPropagation();pdGalNav(-1)">&#8249;</button><button class="pd2-garr pd2-garr-next" title="Siguiente" onclick="event.stopPropagation();pdGalNav(1)">&#8250;</button>`:''}${hasFotos?'':'<span class="prev-tag">Fotos próximamente</span>'}</div>
      ${imgs.length>1?`<div class="pd2-thumbsrow"><div class="pd2-thumbs">${imgs.map((u,i)=>`<img src="${u}" class="${i===0?'on':''}" onclick="event.stopPropagation();pdMain('${u}',this)">`).join('')}</div><span class="pd2-galhint">Haz clic en la imagen para ampliar</span></div>`:''}
    </div>
    <div class="pd2-head">
@@ -219,7 +227,7 @@ function vProp(cod){
          <input id="pc-e" type="email" placeholder="Correo electrónico">
          <input id="pc-p" placeholder="WhatsApp / celular" onkeydown="if(event.key==='Enter')pdLead('${p.cod}')">
          <button class="btn btn-gold" style="width:100%;justify-content:center;margin-top:12px" onclick="pdLead('${p.cod}')">Enviar</button>
-         <a class="btn btn-teal" style="width:100%;justify-content:center;margin-top:8px" href="${WA}?text=Hola,%20me%20interesa%20${p.cod}%20-%20${encodeURIComponent(p.tit)}">${I.wa} Consultar por WhatsApp</a>
+         <a class="btn btn-teal" style="width:100%;justify-content:center;margin-top:8px" href="${WA_BOT}?text=${encodeURIComponent('Hola, quiero más información de la propiedad '+p.cod+' - '+p.tit)}" target="_blank" rel="noopener">${I.wa} Consultar por WhatsApp</a>
          <div class="pd2-actions"><button class="btn btn-outline" onclick="agendar('${p.cod}')">Agendar visita</button><button class="btn btn-ghost" onclick="toggleFav('${p.cod}')">${state.favs.has(p.cod)?'♥ Guardada':'♡ Guardar'}</button></div>
        </div>
        <div class="pd2-share"><span>Compartir:</span>
@@ -412,6 +420,17 @@ async function pdLead(cod){
  }catch(e){ toast('No se pudo enviar. Escríbenos por WhatsApp.'); }
 }
 function pdCopy(){ try{ navigator.clipboard.writeText(location.href); toast('Enlace copiado'); }catch(e){ toast(location.href); } }
+
+/* ---------- Navegar la foto principal in situ (flechas laterales) ---------- */
+function pdGalNav(d){
+ var t=document.querySelectorAll('.pd2-thumbs img'); if(!t.length) return;
+ var m=document.getElementById('pd-main-img');
+ var list=Array.prototype.map.call(t,function(x){return x.src;});
+ var i=m?list.indexOf(m.src):0; if(i<0) i=0;
+ i=(i+d+list.length)%list.length;
+ pdMain(list[i], t[i]);
+ try{ t[i].scrollIntoView({block:'nearest',inline:'center',behavior:'smooth'}); }catch(e){}
+}
 
 /* ---------- Lightbox de la galería (ampliar foto) ---------- */
 var __PDI={list:[],i:0};
