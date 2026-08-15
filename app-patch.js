@@ -93,6 +93,26 @@ var WA_BOT = "https://wa.me/51948298776";
  .dm-txt{position:absolute;left:26px;right:26px;bottom:24px;color:#fff}
  .dm-txt p{font-size:14.5px;color:#e9e3d6;margin:5px 0 14px;max-width:36ch}
  @media(max-width:760px){ .dos-mundos{grid-template-columns:1fr} }
+ .kq-fbar{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:14px}
+ .kq-fbar .cnt{color:var(--muted);font-size:14px}
+ .kq-filtoggle{display:none;align-items:center;gap:8px}
+ .kq-filters{display:grid;grid-template-columns:repeat(4,1fr);gap:12px 14px;align-items:end;background:#fff;border:1px solid var(--line);border-radius:12px;padding:16px 18px;margin-bottom:16px}
+ .kq-filters .fld{display:flex;flex-direction:column;gap:5px}
+ .kq-filters .fld label{font-size:11px;letter-spacing:.5px;text-transform:uppercase;color:var(--muted)}
+ .kq-filters .fld input,.kq-filters .fld select{border:1px solid var(--line);border-radius:6px;padding:9px 11px;font-family:'Jost';font-size:13.5px;background:var(--cream);width:100%}
+ .kq-price2{display:flex;gap:8px}
+ .kq-amen{grid-column:1/-1;display:flex;flex-wrap:wrap;gap:8px;border-top:1px solid var(--line);padding-top:13px}
+ .kq-chip{border:1px solid var(--line);background:#fff;border-radius:30px;padding:7px 14px;font-size:13px;color:var(--ink2);cursor:pointer;transition:.15s;user-select:none}
+ .kq-chip:hover{border-color:var(--gold)}
+ .kq-chip.on{background:linear-gradient(135deg,#e2c766,#C9A227);border-color:transparent;color:#1a1400;font-weight:600}
+ .kq-fclose,.kq-fapply{display:none}
+ @media(max-width:860px){
+   .kq-filtoggle{display:inline-flex}
+   .kq-filters{position:fixed;inset:0;z-index:300;grid-template-columns:1fr;border:0;border-radius:0;padding:66px 18px 92px;overflow:auto;transform:translateY(100%);transition:transform .28s ease;margin:0}
+   .kq-filters.open{transform:none}
+   .kq-fclose{display:flex;position:absolute;top:14px;right:18px;font-size:30px;line-height:1;color:var(--ink);cursor:pointer;background:none;border:0}
+   .kq-fapply{display:block;position:fixed;left:0;right:0;bottom:0;margin:0;border-radius:0;padding:15px;z-index:301}
+ }
  .pd2-general{background:#fff;border:1px solid var(--line);border-radius:12px;padding:24px 26px;margin-bottom:26px}
  .pd2-general h3{font-size:22px;margin-bottom:16px}
  .pd2-genrow{display:grid;grid-template-columns:repeat(4,1fr);gap:18px 24px}
@@ -568,6 +588,72 @@ function vAsia(){
    <p style="color:var(--muted);margin-top:8px">Te ayudamos a venderla, alquilarla por temporada o administrarla cuando no estás.</p>
    <div style="display:flex;gap:12px;justify-content:center;margin-top:18px"><button class="btn btn-gold" onclick="go('#/vende')">Solicitar valorización</button><a class="btn btn-outline" href="${WA_BOT}?text=${encodeURIComponent('Hola, tengo una casa de playa en Asia y quisiera asesoría.')}" target="_blank" rel="noopener">${I.wa} WhatsApp</a></div>
  </div></section>`+footer();
+}
+
+/* ===================================================================
+   Catálogo con filtros completos + panel móvil
+   =================================================================== */
+var AMEN=[
+ ['am_vista','Vista al mar', /vista\s*(al\s*)?mar|ocean|vista panor|vista al golf/],
+ ['am_frente','Frente al mar', /frente al mar|primera l[ií]nea|primera fila|malec[oó]n|pie de playa/],
+ ['am_piscina','Piscina', /piscina|pool|jacuzzi/],
+ ['am_terraza','Terraza', /terraza|roof ?top|azotea|balc[oó]n/],
+ ['am_condo','Condominio', /condominio|country|\bclub\b|conjunto|residencial cerrado|urbanizaci[oó]n cerrada/]
+];
+function amenHay(p){ return (((p.feats||[]).join(' '))+' '+(p.desc||'')+' '+(p.tit||'')+' '+(p.vista||'')).toLowerCase(); }
+function kqFilter(p){
+ var f=state.filters;
+ if(f.oper){ var ok=p.oper===f.oper||(f.oper==='venta'&&p.oper==='venta_y_alquiler')||(f.oper==='alquiler'&&p.oper==='venta_y_alquiler'); if(!ok) return false; }
+ if(f.dist && p.dist!==f.dist) return false;
+ if(f.tipo && p.tipo!==f.tipo) return false;
+ if(f.dorm && (p.dorm||0)<+f.dorm) return false;
+ var pr=p.venta||p.alq||0;
+ if(f.pmin && pr < +f.pmin) return false;
+ if(f.pmax && +f.pmax>0 && pr > +f.pmax) return false;
+ if(f.amin && (p.area||0) < +f.amin) return false;
+ var hay=amenHay(p);
+ for(var i=0;i<AMEN.length;i++){ if(f[AMEN[i][0]] && !AMEN[i][2].test(hay)) return false; }
+ return true;
+}
+function toggleAmen(k){ state.filters[k]=!state.filters[k]; render(); }
+function kqToggleFilters(){ state.fpanel=!state.fpanel; render(); }
+function applyFilters(){ state.fpanel=false; render(); }
+function clearF(){ state.filters={oper:"",dist:"",tipo:"",dorm:"",precio:"",pmin:"",pmax:"",amin:"",am_vista:false,am_frente:false,am_piscina:false,am_terraza:false,am_condo:false}; render(); }
+
+function vCatalogo(){
+ var f=state.filters;
+ var list=PROPS.filter(kqFilter);
+ var S=state.sort;
+ list=list.slice().sort(function(a,b){ if(S==='price_asc')return (a.venta||a.alq||0)-(b.venta||b.alq||0); if(S==='price_desc')return (b.venta||b.alq||0)-(a.venta||a.alq||0); if(S==='area')return (b.area||0)-(a.area||0); return 0; });
+ var grid = state.view==='list';
+ var active=['oper','dist','tipo','dorm','pmin','pmax','amin'].filter(function(k){return f[k];}).length + AMEN.filter(function(a){return f[a[0]];}).length;
+ return nav(false)+`
+ <section class="cat-top"><div class="wrap"><div class="eyebrow" style="color:var(--goldL)">Catálogo</div><h1 class="serif">Explora nuestras propiedades</h1>
+   <p style="color:#cfc9bd;margin-top:8px">${PROPS.length} inmuebles en Lima y balnearios del sur.</p></div></section>
+ <div class="wrap"><section style="padding-top:0">
+   <div class="kq-fbar">
+     <button class="btn btn-outline kq-filtoggle" onclick="kqToggleFilters()">Filtros${active?` (${active})`:''}</button>
+     <div class="cnt"><b>${list.length}</b> propiedades encontradas</div>
+     <div style="display:flex;gap:12px;align-items:center">
+       <select onchange="setSort(this.value)" style="border:1px solid var(--line);padding:8px 11px;border-radius:6px;background:#fff;font-family:'Jost';font-size:13.5px">${opt(["recent","price_asc","price_desc","area"],["Más recientes","Precio: menor a mayor","Precio: mayor a menor","Mayor área"],state.sort)}</select>
+       <div class="view-toggle"><button class="${!grid?'on':''}" onclick="setView('grid')" title="Cuadrícula">${I.layout}</button><button class="${grid?'on':''}" onclick="setView('list')" title="Lista">${I.leads}</button></div>
+     </div>
+   </div>
+   <div class="kq-filters${state.fpanel?' open':''}" id="kqFilters">
+     <button class="kq-fclose" onclick="kqToggleFilters()">&times;</button>
+     <div class="fld"><label>Operación</label><select onchange="setF('oper',this.value)">${opt(["","venta","alquiler"],["Todas","Venta","Alquiler"],f.oper)}</select></div>
+     <div class="fld"><label>Distrito / zona</label><select onchange="setF('dist',this.value)"><option value="">Todas</option>${DISTRICTS.map(function(d){return '<option '+(f.dist===d?'selected':'')+'>'+d+'</option>'}).join("")}</select></div>
+     <div class="fld"><label>Tipo</label><select onchange="setF('tipo',this.value)"><option value="">Todos</option>${Object.keys(TIPO_LBL).map(function(k){return '<option value="'+k+'" '+(f.tipo===k?'selected':'')+'>'+TIPO_LBL[k]+'</option>'}).join("")}</select></div>
+     <div class="fld"><label>Dormitorios (mín.)</label><select onchange="setF('dorm',this.value)">${opt(["","1","2","3","4"],["Todos","1+","2+","3+","4+"],f.dorm)}</select></div>
+     <div class="fld"><label>Precio USD (mín – máx)</label><div class="kq-price2"><input type="number" inputmode="numeric" placeholder="Mín" value="${f.pmin||''}" onchange="setF('pmin',this.value)"><input type="number" inputmode="numeric" placeholder="Máx" value="${f.pmax||''}" onchange="setF('pmax',this.value)"></div></div>
+     <div class="fld"><label>Área mín (m²)</label><input type="number" inputmode="numeric" placeholder="Ej. 120" value="${f.amin||''}" onchange="setF('amin',this.value)"></div>
+     <div class="fld" style="justify-content:flex-end"><label>&nbsp;</label><button class="btn btn-ghost" style="justify-content:center" onclick="clearF()">Limpiar filtros</button></div>
+     <div class="kq-amen">${AMEN.map(function(a){return '<span class="kq-chip'+(f[a[0]]?' on':'')+'" onclick="toggleAmen(\''+a[0]+'\')">'+a[1]+'</span>'}).join("")}</div>
+     <button class="btn btn-gold kq-fapply" onclick="applyFilters()">Ver ${list.length} propiedades</button>
+   </div>
+   <div class="${grid?'':'pgrid'}" style="${grid?'display:flex;flex-direction:column;gap:16px':''}">${list.map(function(p){return propCard(p,grid)}).join("")||'<p style="color:var(--muted);grid-column:1/-1;text-align:center;padding:60px 0">No hay propiedades con esos filtros. <a class="mini" onclick="clearF()">Limpiar filtros</a></p>'}</div>
+ </section></div>
+ ${typeof notFoundCTA==='function'?notFoundCTA():''}`+footer();
 }
 
 /* ---------- Aplicar el parche en la carga: quitar feedback viejo y re-render ---------- */
