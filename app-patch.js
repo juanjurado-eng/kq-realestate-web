@@ -12,14 +12,23 @@ var WA_BOT = "https://wa.me/51948298776";
  if(document.getElementById('kqv-patch-css')) return;
  const s=document.createElement('style'); s.id='kqv-patch-css';
  s.textContent=`
- .wrap{width:92%;max-width:1800px}
+ /* === REALINEAMIENTO DE COLOR AL BRIEF (oliva + petróleo sobre marfil). Para volver al DORADO: restaurar app-patch-DORADO-backup.js === */
+ :root{
+   --gold:#6d7a5f;--goldL:#b9c3a6;--goldD:#495137;--teal:#3c605e;--tealL:#4d7a77;
+   --cream:#F4F1EA;--cream2:#EAE4D8;--line:#D8D1C4;
+   --ink:#20211F;--ink2:#3a3b37;--muted:#74736C;
+   --dark:#20241f;--dark2:#252a23;--dark3:#2e342b;
+ }
+ .btn-gold{background:linear-gradient(135deg,#7d8a6f,#5f6b50);color:#fff;box-shadow:0 10px 24px -12px rgba(95,107,80,.5)}
+ .fb-btn{background:linear-gradient(135deg,#7d8a6f,#5f6b50);color:#fff}
+ .wrap{width:92%;max-width:1280px}
  .pgrid{gap:28px}
  @media(min-width:1500px){ .pgrid,.svc-grid{grid-template-columns:repeat(3,1fr)} }
  .pcard{border-radius:12px;box-shadow:0 12px 34px -20px rgba(0,0,0,.28)}
  .pcard .ph{aspect-ratio:3/2}
  .pcard .ph img{z-index:0}
  .pcard .ph::after{content:"";position:absolute;inset:0;background:linear-gradient(to top,rgba(0,0,0,.5),transparent 45%);pointer-events:none;z-index:1}
- .pcard .dist-badge{position:absolute;top:13px;left:13px;z-index:2;background:linear-gradient(135deg,#e2c766,#C9A227);color:#1a1400;font-size:10.5px;font-weight:700;letter-spacing:1.2px;text-transform:uppercase;padding:5px 12px;border-radius:4px;box-shadow:0 4px 12px -4px rgba(201,162,39,.7)}
+ .pcard .dist-badge{position:absolute;top:13px;left:13px;z-index:2;background:linear-gradient(135deg,#7d8a6f,#5f6b50);color:#fff;font-size:10.5px;font-weight:700;letter-spacing:1.2px;text-transform:uppercase;padding:5px 12px;border-radius:4px;box-shadow:0 4px 12px -4px rgba(95,107,80,.6)}
  .pcard .oper-badge{position:absolute;bottom:13px;left:15px;z-index:2;color:#fff;font-size:12px;font-weight:600;letter-spacing:1.6px;text-transform:uppercase}
  .pcard .fav,.pcard .prev-tag{z-index:2}
  .pcard .body{padding:18px;gap:9px}
@@ -31,7 +40,7 @@ var WA_BOT = "https://wa.me/51948298776";
  .pcard .pfoot{display:flex;align-items:center;justify-content:space-between;border-top:1px solid var(--line);padding-top:14px;margin-top:3px}
  .pcard .pfoot .price{font-size:22px}
  .pcard .plus{width:34px;height:34px;flex:0 0 auto;border-radius:50%;border:1px solid var(--line);background:#fff;color:var(--ink);font-size:20px;line-height:1;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:.2s}
- .pcard:hover .plus{background:linear-gradient(135deg,#e2c766,#C9A227);border-color:transparent;color:#1a1400}
+ .pcard:hover .plus{background:linear-gradient(135deg,#7d8a6f,#5f6b50);border-color:transparent;color:#fff}
  .pcard.list .ph{aspect-ratio:auto}
  .desc-body h4.desc-sub{font-family:'Corm',serif;font-size:20px;font-weight:600;color:var(--ink);margin:26px 0 12px;padding:0 22px 7px 0;border-bottom:2px solid var(--gold);display:inline-block}
  .desc-body h4.desc-sub:first-child{margin-top:2px}
@@ -42,7 +51,6 @@ var WA_BOT = "https://wa.me/51948298776";
  .desc-body p{margin-bottom:11px;line-height:1.65}
  @media(max-width:640px){ .desc-body .desc-list2{grid-template-columns:1fr} }
  .pd2-top{padding-top:96px}
- .wrap.pd2-top,.wrap.pd2-body{width:90%;max-width:1120px;margin-left:auto;margin-right:auto}
  .pd2-back{color:var(--goldD);font-size:13px;letter-spacing:.4px;display:inline-block;margin-bottom:14px;cursor:pointer}
  .pd2-head{display:flex;justify-content:space-between;align-items:flex-end;flex-wrap:wrap;gap:16px;margin:18px 0 4px}
  .pd2-head h1{font-size:34px;margin-top:12px;color:var(--ink)}
@@ -66,7 +74,6 @@ var WA_BOT = "https://wa.me/51948298776";
  .pd2-garr:hover{opacity:1;background:rgba(20,20,20,.72)}
  .pd2-garr-prev{left:14px}
  .pd2-garr-next{right:14px}
- @media(max-width:768px){ .wrap.pd2-top,.wrap.pd2-body{width:90%;max-width:none} }
  @media(max-width:560px){ .pd2-garr{width:38px;height:38px;font-size:22px} }
  .pd2-thumbsrow{display:flex;justify-content:space-between;align-items:center;gap:16px;margin-top:10px}
  .pd2-galhint{font-size:12px;color:var(--muted);white-space:nowrap;flex:0 0 auto}
@@ -294,7 +301,7 @@ function renderApGallery(){
  gal.innerHTML=urls.map((u,i)=>`
    <div class="ap-thumb" draggable="true" data-i="${i}" ondragstart="apDrag(${i})" ondragover="event.preventDefault()" ondrop="apDrop(${i})" style="position:relative;width:96px">
      <img src="${u}" style="width:96px;height:70px;object-fit:cover;border-radius:6px;border:1px solid var(--line);cursor:grab" draggable="false">
-     <span style="position:absolute;top:-7px;left:-7px;background:linear-gradient(135deg,#e2c766,#C9A227);color:#1a1400;font-size:11px;font-weight:700;width:21px;height:21px;border-radius:50%;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 5px rgba(0,0,0,.3)">${i+1}</span>
+     <span style="position:absolute;top:-7px;left:-7px;background:linear-gradient(135deg,#7d8a6f,#5f6b50);color:#fff;font-size:11px;font-weight:700;width:21px;height:21px;border-radius:50%;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 5px rgba(0,0,0,.3)">${i+1}</span>
      <button onclick="apMove(${i},-1)" title="Mover antes" ${i===0?'disabled':''} style="position:absolute;bottom:3px;left:3px;width:21px;height:21px;border:none;border-radius:5px;background:rgba(20,20,20,.74);color:#fff;cursor:pointer;font-size:11px;${i===0?'opacity:.35':''}">◀</button>
      <button onclick="apMove(${i},1)" title="Mover después" ${i===urls.length-1?'disabled':''} style="position:absolute;bottom:3px;left:26px;width:21px;height:21px;border:none;border-radius:5px;background:rgba(20,20,20,.74);color:#fff;cursor:pointer;font-size:11px;${i===urls.length-1?'opacity:.35':''}">▶</button>
      <button onclick="removeApFoto(${i})" title="Quitar" style="position:absolute;top:-7px;right:-7px;width:21px;height:21px;border-radius:50%;border:none;background:#c0392b;color:#fff;cursor:pointer;font-size:12px;line-height:1">✕</button>
