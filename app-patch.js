@@ -84,6 +84,15 @@ var WA_BOT = "https://wa.me/51948298776";
  .pd2-lb-count{position:absolute;bottom:20px;left:0;right:0;text-align:center;color:#fff;font-size:13px;letter-spacing:1.5px}
  .pd2-video{position:relative;width:100%;aspect-ratio:16/9;margin:0 auto 24px;border-radius:12px;overflow:hidden;background:#0b0b0b;box-shadow:var(--shadow)}
  .pd2-video iframe{position:absolute;inset:0;width:100%;height:100%;border:0}
+ .field textarea{width:100%;border:1px solid var(--line);border-radius:6px;padding:11px 13px;font-family:'Jost';font-size:14px;background:var(--cream);resize:vertical}
+ .dos-mundos{display:grid;grid-template-columns:1fr 1fr;gap:26px}
+ .dm-card{position:relative;border-radius:14px;overflow:hidden;aspect-ratio:4/3;cursor:pointer}
+ .dm-card img{width:100%;height:100%;object-fit:cover;transition:.5s}
+ .dm-card:hover img{transform:scale(1.05)}
+ .dm-ov{position:absolute;inset:0;background:linear-gradient(to top,rgba(0,0,0,.74),transparent 62%)}
+ .dm-txt{position:absolute;left:26px;right:26px;bottom:24px;color:#fff}
+ .dm-txt p{font-size:14.5px;color:#e9e3d6;margin:5px 0 14px;max-width:36ch}
+ @media(max-width:760px){ .dos-mundos{grid-template-columns:1fr} }
  .pd2-general{background:#fff;border:1px solid var(--line);border-radius:12px;padding:24px 26px;margin-bottom:26px}
  .pd2-general h3{font-size:22px;margin-bottom:16px}
  .pd2-genrow{display:grid;grid-template-columns:repeat(4,1fr);gap:18px 24px}
@@ -393,6 +402,15 @@ function vHome(){
  </div></section>
  ${videoDestacado()}
  ${founderBlock('home')}
+ <section style="background:#fff"><div class="wrap">
+   <div class="sec-head"><div class="eyebrow">Dos mundos, una especialización</div><h2 class="serif">Lima Top &amp; Asia</h2><div class="divider"></div></div>
+   <div class="dos-mundos">
+     <div class="dm-card" onclick="go('#/lima-top')"><img src="${scene('tower',2)}" alt="Lima Top"><div class="dm-ov"></div>
+       <div class="dm-txt"><div class="serif" style="font-size:30px">Lima Top</div><p>Residencias urbanas en las zonas más exclusivas de Lima.</p><span class="btn btn-gold">Explorar Lima Top →</span></div></div>
+     <div class="dm-card" onclick="go('#/asia')"><img src="${scene('beach',0)}" alt="Asia"><div class="dm-ov"></div>
+       <div class="dm-txt"><div class="serif" style="font-size:30px">Asia</div><p>Casas de playa para vivir, descansar o invertir.</p><span class="btn btn-gold">Explorar Asia →</span></div></div>
+   </div>
+ </div></section>
  ${socialStrip()}
  <section style="background:var(--cream)"><div class="wrap" style="display:grid;grid-template-columns:1fr 1.1fr;gap:48px;align-items:center">
    <div><div class="eyebrow">¿Listo para empezar?</div><h2 class="serif" style="font-size:38px;margin-top:10px">Conversemos sobre tu próxima propiedad</h2>
@@ -441,8 +459,140 @@ function pdLbClose(){ var lb=document.getElementById('pd-lb'); if(lb) lb.classLi
 function pdLbNav(d){ if(!__PDI.list.length) return; __PDI.i=(__PDI.i+d+__PDI.list.length)%__PDI.list.length; pdLbShow(); var th=document.querySelectorAll('.pd2-thumbs img')[__PDI.i]; pdMain(__PDI.list[__PDI.i], th); }
 if(!window.__pdKeys){ window.__pdKeys=1; document.addEventListener('keydown',function(e){ var lb=document.getElementById('pd-lb'); if(!lb||!lb.classList.contains('on')) return; if(e.key==='Escape') pdLbClose(); else if(e.key==='ArrowLeft') pdLbNav(-1); else if(e.key==='ArrowRight') pdLbNav(1); }); }
 
+/* ===================================================================
+   Nuevas secciones: NAV ampliada, Vende o alquila (valorización),
+   Lima Top y Asia. Se despliegan vía el router-parche del final.
+   =================================================================== */
+function inAsia(p){ var s=((p.dist||'')+' '+(p.tit||'')).toLowerCase(); return /asia|playa|beach|\bmar\b|cerro azul|punta hermosa|punta negra|san bartolo|santa mar|balneario|naplo|se[nñ]oritas|chocaya/.test(s); }
+function limaTopProps(){ return PROPS.filter(function(p){ return !inAsia(p); }); }
+function asiaProps(){ return PROPS.filter(inAsia); }
+
+/* NAV con Lima Top / Asia / Vende o alquila */
+function nav(top){
+ var links=[["#/","Inicio"],["#/propiedades","Propiedades"],["#/lima-top","Lima Top"],["#/asia","Asia"],["#/vende","Vende o alquila"],["#/nosotros","Nosotros"],["#/contacto","Contacto"]];
+ var cur=location.hash||"#/";
+ var cta = state.auth.logged
+   ? '<a class="navlink" onclick="go(\'#/cuenta\')">Mi cuenta</a>'+(state.auth.role==='admin'?'<button class="btn btn-gold" onclick="go(\'#/admin\')">Administración</button>':'<button class="btn btn-outline-l" onclick="logout()">Salir</button>')
+   : '<a class="navlink" onclick="go(\'#/login\')">Ingresar</a><button class="btn btn-gold" onclick="go(\'#/registro\')">Registrarse</button>';
+ return '<header class="nav '+(top?'top':'solid')+'" id="nav"><div class="wrap bar">'
+   +'<div class="brand" onclick="go(\'#/\')" style="cursor:pointer"><img src="'+LOGO+'"><div><div style="font-family:\'Corm\';font-size:19px;color:#efe9dd;font-weight:600;line-height:1">KQ Real Estate</div><div class="brand-sub">LIMA &amp; BEACH PROPERTIES</div></div></div>'
+   +'<nav class="navlinks">'+links.map(function(l){return '<a class="navlink '+(cur===l[0]?'active':'')+'" onclick="go(\''+l[0]+'\')">'+l[1]+'</a>'}).join("")+'</nav>'
+   +'<div class="navcta">'+cta+'</div>'
+   +'<div class="hamb" onclick="go(\'#/propiedades\')">'+I.menu+'</div>'
+ +'</div></header>';
+}
+
+/* Página: Vende o alquila (valorización confidencial) */
+function vVende(){
+ var steps=[["Evaluación de la propiedad","Visitamos y analizamos tu inmueble para entender su valor real y su mejor posicionamiento."],["Análisis de mercado y precio","Comparables de la zona y una estrategia de precio que atrae a los compradores correctos."],["Fotografía y video profesional","Presentamos tu propiedad al nivel que merece, con material que genera interés real."],["Difusión y calificación de interesados","Publicación en nuestra red y portales, filtrando compradores calificados."],["Visitas y negociación","Coordinamos las visitas, negociamos a tu favor y te acompañamos hasta el cierre."],["Acompañamiento legal y documental","Revisión de títulos, minuta y proceso notarial con respaldo profesional."]];
+ return nav(false)+`
+ <section class="cat-top" style="padding-bottom:46px"><div class="wrap">
+   <div class="eyebrow" style="color:var(--goldL)">Vende o alquila</div>
+   <h1 class="serif" style="font-size:44px">Presentamos tu propiedad con la estrategia que merece.</h1>
+   <p style="color:#cfc9bd;margin-top:12px;max-width:64ch">Definimos el posicionamiento, precio, presentación y plan comercial adecuados para vender o alquilar tu propiedad con precisión — con discreción y criterio, sin urgencias comerciales.</p>
+ </div></section>
+ <section style="background:var(--cream)"><div class="wrap" style="display:grid;grid-template-columns:1.05fr 1fr;gap:52px;align-items:start">
+   <div>
+     <h2 class="serif" style="font-size:30px">Qué incluye nuestro servicio</h2>
+     <div style="margin-top:22px;display:grid;gap:16px">
+       ${steps.map(function(s,i){return '<div style="display:flex;gap:14px;align-items:flex-start"><span style="flex:0 0 auto;width:30px;height:30px;border-radius:50%;background:linear-gradient(135deg,#e2c766,#C9A227);color:#1a1400;font-weight:700;display:flex;align-items:center;justify-content:center;font-size:14px">'+(i+1)+'</span><div><div style="font-weight:600;color:var(--ink)">'+s[0]+'</div><div style="color:var(--muted);font-size:14px;margin-top:2px">'+s[1]+'</div></div></div>'}).join("")}
+     </div>
+   </div>
+   <div style="background:#fff;border:1px solid var(--line);border-radius:12px;padding:26px;box-shadow:var(--shadow)">
+     <h2 class="serif" style="font-size:26px">Solicita una valorización confidencial</h2>
+     <p style="color:var(--muted);font-size:13.5px;margin:6px 0 16px">Déjanos tus datos y Karen te contactará de forma reservada. Sin compromiso.</p>
+     <div class="field"><label>Nombre y apellido</label><input id="vl-n" placeholder="Tu nombre"></div>
+     <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+       <div class="field"><label>WhatsApp</label><input id="vl-p" placeholder="9XX XXX XXX"></div>
+       <div class="field"><label>Correo</label><input id="vl-e" type="email" placeholder="tu@correo.com"></div>
+     </div>
+     <div class="field"><label>Ubicación del inmueble</label><input id="vl-u" placeholder="Distrito / urbanización"></div>
+     <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+       <div class="field"><label>Tipo</label><select id="vl-t">${Object.keys(TIPO_LBL).map(function(k){return '<option value="'+TIPO_LBL[k]+'">'+TIPO_LBL[k]+'</option>'}).join("")}</select></div>
+       <div class="field"><label>Operación</label><select id="vl-o"><option>Venta</option><option>Alquiler</option><option>Venta o alquiler</option></select></div>
+     </div>
+     <div class="field"><label>Rango estimado de valor (opcional)</label><input id="vl-r" placeholder="Ej. US$ 300,000 – 400,000"></div>
+     <div class="field"><label>Comentario (opcional)</label><textarea id="vl-c" rows="3" placeholder="Cuéntanos algo más sobre tu propiedad"></textarea></div>
+     <button class="btn btn-gold" style="width:100%;justify-content:center;margin-top:8px" onclick="sendValoracion()">Solicitar valorización confidencial</button>
+     <a class="btn btn-teal" style="width:100%;justify-content:center;margin-top:9px" href="${WA_BOT}?text=${encodeURIComponent('Hola, quisiera solicitar una valorización confidencial de mi propiedad.')}" target="_blank" rel="noopener">${I.wa} Prefiero WhatsApp</a>
+   </div>
+ </div></section>`+footer();
+}
+async function sendValoracion(){
+ var g=function(id){var e=document.getElementById(id);return e?(e.value||'').trim():'';};
+ var email=g('vl-e'), wa=g('vl-p');
+ if(!email && !wa){ toast('Déjanos tu correo o WhatsApp para contactarte.'); return; }
+ var msg='VALORIZACIÓN — Ubicación: '+(g('vl-u')||'—')+' · Tipo: '+g('vl-t')+' · Operación: '+g('vl-o')+' · Rango: '+(g('vl-r')||'—')+(g('vl-c')?(' · '+g('vl-c')):'');
+ try{
+   await api('/api/leads',{method:'POST',body:JSON.stringify({nombre:g('vl-n'),email:email,whatsapp:wa,mensaje:msg,origen:'vende'})});
+   toast('¡Gracias! Karen te contactará de forma confidencial.');
+   ['vl-n','vl-p','vl-e','vl-u','vl-r','vl-c'].forEach(function(id){var e=document.getElementById(id);if(e)e.value='';});
+ }catch(e){ toast('No se pudo enviar. Escríbenos por WhatsApp.'); }
+}
+
+/* Página: Lima Top */
+function vLimaTop(){
+ var list=limaTopProps();
+ return nav(false)+`
+ <section class="cat-top"><div class="wrap">
+   <div class="eyebrow" style="color:var(--goldL)">Lima Top</div>
+   <h1 class="serif">Residencias en las zonas más exclusivas de Lima.</h1>
+   <p style="color:#cfc9bd;margin-top:8px;max-width:62ch">San Isidro, Miraflores, Barranco, La Molina, Surco y las mejores urbanizaciones — propiedades con ubicación, diseño y privacidad.</p>
+ </div></section>
+ <section style="background:var(--cream)"><div class="wrap">
+   <div class="result-bar"><div class="cnt"><b>${list.length}</b> propiedades en Lima Top</div><button class="btn btn-outline" onclick="go('#/propiedades')">Ver todo el catálogo →</button></div>
+   <div class="pgrid">${list.map(function(p){return propCard(p)}).join("")||'<p style="color:var(--muted);grid-column:1/-1;text-align:center;padding:50px 0">Muy pronto nuevas propiedades en Lima Top. <a class="mini" onclick="go(\'#/contacto\')">Escríbenos</a></p>'}</div>
+ </div></section>
+ <section style="background:#fff;border-top:1px solid var(--line)"><div class="wrap" style="text-align:center;padding:14px 0">
+   <h2 class="serif" style="font-size:30px">¿Buscas algo específico en Lima Top?</h2>
+   <p style="color:var(--muted);margin-top:8px">Cuéntanos qué necesitas y te compartimos opciones a tu medida.</p>
+   <div style="display:flex;gap:12px;justify-content:center;margin-top:18px"><button class="btn btn-gold" onclick="go('#/contacto')">Hablar con un asesor</button><a class="btn btn-outline" href="${WA_BOT}?text=${encodeURIComponent('Hola, busco una propiedad en Lima Top.')}" target="_blank" rel="noopener">${I.wa} WhatsApp</a></div>
+ </div></section>`+footer();
+}
+
+/* Página: Asia */
+function vAsia(){
+ var list=asiaProps();
+ return nav(false)+`
+ <section class="cat-top"><div class="wrap">
+   <div class="eyebrow" style="color:var(--goldL)">Asia &amp; casas de playa</div>
+   <h1 class="serif">Asia: una forma distinta de vivir el verano.</h1>
+   <p style="color:#cfc9bd;margin-top:8px;max-width:62ch">Casas frente al mar, con piscina y en condominios privados — para uso familiar, descanso o inversión, con alquiler de temporada.</p>
+ </div></section>
+ <section style="background:var(--cream)"><div class="wrap">
+   <div class="result-bar"><div class="cnt"><b>${list.length}</b> propiedades en Asia y balnearios</div><button class="btn btn-outline" onclick="go('#/propiedades')">Ver todo el catálogo →</button></div>
+   <div class="pgrid">${list.map(function(p){return propCard(p)}).join("")||'<p style="color:var(--muted);grid-column:1/-1;text-align:center;padding:50px 0">Muy pronto nuevas propiedades en Asia. <a class="mini" onclick="go(\'#/contacto\')">Escríbenos</a></p>'}</div>
+ </div></section>
+ <section style="background:#fff;border-top:1px solid var(--line)"><div class="wrap" style="text-align:center;padding:14px 0">
+   <h2 class="serif" style="font-size:30px">¿Tienes una casa de playa en Asia?</h2>
+   <p style="color:var(--muted);margin-top:8px">Te ayudamos a venderla, alquilarla por temporada o administrarla cuando no estás.</p>
+   <div style="display:flex;gap:12px;justify-content:center;margin-top:18px"><button class="btn btn-gold" onclick="go('#/vende')">Solicitar valorización</button><a class="btn btn-outline" href="${WA_BOT}?text=${encodeURIComponent('Hola, tengo una casa de playa en Asia y quisiera asesoría.')}" target="_blank" rel="noopener">${I.wa} WhatsApp</a></div>
+ </div></section>`+footer();
+}
+
 /* ---------- Aplicar el parche en la carga: quitar feedback viejo y re-render ---------- */
 (function applyPatch(){
  try{ const old=document.getElementById('fbRoot'); if(old) old.remove(); }catch(e){}
  try{ if(typeof render==='function') render(); }catch(e){}
+})();
+
+/* ---------- Router-parche: rutas nuevas (#/vende, #/lima-top, #/asia) ---------- */
+(function patchRouter(){
+ if(typeof render!=='function') return;
+ var base=render;
+ function waFloat(){ return '<div class="wa-float" onclick="window.open(\''+WA+'\',\'_blank\')">'+I.wa+'</div>'; }
+ function navScroll(){ var n=document.getElementById('nav'); if(n&&n.classList.contains('top')){ var onS=function(){ if(window.scrollY>60){n.classList.remove('top');n.classList.add('solid');}else{n.classList.add('top');n.classList.remove('solid');} }; window.onscroll=onS; onS(); } else { window.onscroll=null; } }
+ function patched(){
+   var h=location.hash||'#/'; var root=document.getElementById('root'); if(!root) return;
+   var v=null;
+   if(h.indexOf('#/vende')===0) v=vVende();
+   else if(h.indexOf('#/lima-top')===0) v=vLimaTop();
+   else if(h.indexOf('#/asia')===0) v=vAsia();
+   if(v!=null){ root.innerHTML=v+waFloat(); navScroll(); return; }
+   return base();
+ }
+ try{ window.removeEventListener('hashchange', base); }catch(e){}
+ window.addEventListener('hashchange', patched);
+ window.__kqrender=patched;
+ patched();
 })();
