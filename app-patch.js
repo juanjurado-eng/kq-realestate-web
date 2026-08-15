@@ -423,14 +423,14 @@ function vHome(){
  ${videoDestacado()}
  ${founderBlock('home')}
  <section style="background:#fff"><div class="wrap">
-   <div class="sec-head"><div class="eyebrow">Tres mundos, una especialización</div><h2 class="serif">Lima Top · Campo · Asia</h2><div class="divider"></div></div>
+   <div class="sec-head"><div class="eyebrow">Tres mundos, una especialización</div><h2 class="serif">Lima Top · Asia · Campo</h2><div class="divider"></div></div>
    <div class="dos-mundos">
      <div class="dm-card" onclick="go('#/lima-top')"><img src="${scene('tower',2)}" alt="Lima Top"><div class="dm-ov"></div>
        <div class="dm-txt"><div class="serif" style="font-size:28px">Lima Top</div><p>Residencias urbanas en las zonas más exclusivas de Lima.</p><span class="btn btn-gold">Explorar →</span></div></div>
-     <div class="dm-card" onclick="go('#/campo')"><img src="${scene('house',4)}" alt="Campo"><div class="dm-ov"></div>
-       <div class="dm-txt"><div class="serif" style="font-size:28px">Campo</div><p>Casas con jardín y naturaleza cerca de Lima.</p><span class="btn btn-gold">Explorar →</span></div></div>
      <div class="dm-card" onclick="go('#/asia')"><img src="${scene('beach',0)}" alt="Asia"><div class="dm-ov"></div>
        <div class="dm-txt"><div class="serif" style="font-size:28px">Asia</div><p>Casas de playa para vivir, descansar o invertir.</p><span class="btn btn-gold">Explorar →</span></div></div>
+     <div class="dm-card" onclick="go('#/campo')"><img src="${scene('house',4)}" alt="Campo"><div class="dm-ov"></div>
+       <div class="dm-txt"><div class="serif" style="font-size:28px">Campo</div><p>Casas con jardín y naturaleza cerca de Lima.</p><span class="btn btn-gold">Explorar →</span></div></div>
    </div>
  </div></section>
  ${socialStrip()}
@@ -493,7 +493,7 @@ function limaTopProps(){ return PROPS.filter(function(p){ return !inAsia(p) && !
 
 /* NAV con Lima Top / Asia / Vende o alquila */
 function nav(top){
- var links=[["#/","Inicio"],["#/propiedades","Propiedades"],["#/lima-top","Lima Top"],["#/campo","Campo"],["#/asia","Asia"],["#/vende","Vende"],["#/nosotros","Nosotros"],["#/contacto","Contacto"]];
+ var links=[["#/","Inicio"],["#/propiedades","Propiedades"],["#/lima-top","Lima Top"],["#/asia","Asia"],["#/campo","Campo"],["#/vende","Vende"],["#/nosotros","Nosotros"],["#/contacto","Contacto"]];
  var cur=location.hash||"#/";
  var cta = state.auth.logged
    ? '<a class="navlink" onclick="go(\'#/cuenta\')">Mi cuenta</a>'+(state.auth.role==='admin'?'<button class="btn btn-gold" onclick="go(\'#/admin\')">Administración</button>':'<button class="btn btn-outline-l" onclick="logout()">Salir</button>')
