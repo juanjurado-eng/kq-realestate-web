@@ -85,8 +85,8 @@ var WA_BOT = "https://wa.me/51948298776";
  .pd2-video{position:relative;width:100%;aspect-ratio:16/9;margin:0 auto 24px;border-radius:12px;overflow:hidden;background:#0b0b0b;box-shadow:var(--shadow)}
  .pd2-video iframe{position:absolute;inset:0;width:100%;height:100%;border:0}
  .field textarea{width:100%;border:1px solid var(--line);border-radius:6px;padding:11px 13px;font-family:'Jost';font-size:14px;background:var(--cream);resize:vertical}
- .dos-mundos{display:grid;grid-template-columns:1fr 1fr;gap:26px}
- .dm-card{position:relative;border-radius:14px;overflow:hidden;aspect-ratio:4/3;cursor:pointer}
+ .dos-mundos{display:grid;grid-template-columns:repeat(3,1fr);gap:22px}
+ .dm-card{position:relative;border-radius:14px;overflow:hidden;aspect-ratio:3/4;cursor:pointer}
  .dm-card img{width:100%;height:100%;object-fit:cover;transition:.5s}
  .dm-card:hover img{transform:scale(1.05)}
  .dm-ov{position:absolute;inset:0;background:linear-gradient(to top,rgba(0,0,0,.74),transparent 62%)}
@@ -423,12 +423,14 @@ function vHome(){
  ${videoDestacado()}
  ${founderBlock('home')}
  <section style="background:#fff"><div class="wrap">
-   <div class="sec-head"><div class="eyebrow">Dos mundos, una especialización</div><h2 class="serif">Lima Top &amp; Asia</h2><div class="divider"></div></div>
+   <div class="sec-head"><div class="eyebrow">Tres mundos, una especialización</div><h2 class="serif">Lima Top · Campo · Asia</h2><div class="divider"></div></div>
    <div class="dos-mundos">
      <div class="dm-card" onclick="go('#/lima-top')"><img src="${scene('tower',2)}" alt="Lima Top"><div class="dm-ov"></div>
-       <div class="dm-txt"><div class="serif" style="font-size:30px">Lima Top</div><p>Residencias urbanas en las zonas más exclusivas de Lima.</p><span class="btn btn-gold">Explorar Lima Top →</span></div></div>
+       <div class="dm-txt"><div class="serif" style="font-size:28px">Lima Top</div><p>Residencias urbanas en las zonas más exclusivas de Lima.</p><span class="btn btn-gold">Explorar →</span></div></div>
+     <div class="dm-card" onclick="go('#/campo')"><img src="${scene('house',4)}" alt="Campo"><div class="dm-ov"></div>
+       <div class="dm-txt"><div class="serif" style="font-size:28px">Campo</div><p>Casas con jardín y naturaleza cerca de Lima.</p><span class="btn btn-gold">Explorar →</span></div></div>
      <div class="dm-card" onclick="go('#/asia')"><img src="${scene('beach',0)}" alt="Asia"><div class="dm-ov"></div>
-       <div class="dm-txt"><div class="serif" style="font-size:30px">Asia</div><p>Casas de playa para vivir, descansar o invertir.</p><span class="btn btn-gold">Explorar Asia →</span></div></div>
+       <div class="dm-txt"><div class="serif" style="font-size:28px">Asia</div><p>Casas de playa para vivir, descansar o invertir.</p><span class="btn btn-gold">Explorar →</span></div></div>
    </div>
  </div></section>
  ${socialStrip()}
@@ -483,13 +485,15 @@ if(!window.__pdKeys){ window.__pdKeys=1; document.addEventListener('keydown',fun
    Nuevas secciones: NAV ampliada, Vende o alquila (valorización),
    Lima Top y Asia. Se despliegan vía el router-parche del final.
    =================================================================== */
-function inAsia(p){ var s=((p.dist||'')+' '+(p.tit||'')).toLowerCase(); return /asia|playa|beach|\bmar\b|cerro azul|punta hermosa|punta negra|san bartolo|santa mar|balneario|naplo|se[nñ]oritas|chocaya/.test(s); }
-function limaTopProps(){ return PROPS.filter(function(p){ return !inAsia(p); }); }
+function inAsia(p){ var s=((p.dist||'')+' '+(p.tit||'')).toLowerCase(); return /asia|playa|beach|\bmar\b|cerro azul|punta hermosa|punta negra|san bartolo|santa mar[ií]a|balneario|naplo|se[nñ]oritas|chocaya|paracas|pulpos/.test(s); }
+function inCampo(p){ var d=((p.dist||'')+' '+(p.dir||'')+' '+(p.tit||'')).toLowerCase(); return /cieneguilla|pachac[aá]mac|chaclacayo|chosica|santa eulalia|antioqu[ií]a|lunahuan[aá]|huarochir[ií]|carabayllo|\bcampo\b|casa de campo|chacra|fundo|parcela|hu[aá]nuco|azpitia/.test(d); }
 function asiaProps(){ return PROPS.filter(inAsia); }
+function campoProps(){ return PROPS.filter(function(p){ return !inAsia(p) && inCampo(p); }); }
+function limaTopProps(){ return PROPS.filter(function(p){ return !inAsia(p) && !inCampo(p); }); }
 
 /* NAV con Lima Top / Asia / Vende o alquila */
 function nav(top){
- var links=[["#/","Inicio"],["#/propiedades","Propiedades"],["#/lima-top","Lima Top"],["#/asia","Asia"],["#/vende","Vende o alquila"],["#/nosotros","Nosotros"],["#/contacto","Contacto"]];
+ var links=[["#/","Inicio"],["#/propiedades","Propiedades"],["#/lima-top","Lima Top"],["#/campo","Campo"],["#/asia","Asia"],["#/vende","Vende"],["#/nosotros","Nosotros"],["#/contacto","Contacto"]];
  var cur=location.hash||"#/";
  var cta = state.auth.logged
    ? '<a class="navlink" onclick="go(\'#/cuenta\')">Mi cuenta</a>'+(state.auth.role==='admin'?'<button class="btn btn-gold" onclick="go(\'#/admin\')">Administración</button>':'<button class="btn btn-outline-l" onclick="logout()">Salir</button>')
@@ -567,6 +571,26 @@ function vLimaTop(){
    <h2 class="serif" style="font-size:30px">¿Buscas algo específico en Lima Top?</h2>
    <p style="color:var(--muted);margin-top:8px">Cuéntanos qué necesitas y te compartimos opciones a tu medida.</p>
    <div style="display:flex;gap:12px;justify-content:center;margin-top:18px"><button class="btn btn-gold" onclick="go('#/contacto')">Hablar con un asesor</button><a class="btn btn-outline" href="${WA_BOT}?text=${encodeURIComponent('Hola, busco una propiedad en Lima Top.')}" target="_blank" rel="noopener">${I.wa} WhatsApp</a></div>
+ </div></section>`+footer();
+}
+
+/* Página: Campo (casas de campo) */
+function vCampo(){
+ var list=campoProps();
+ return nav(false)+`
+ <section class="cat-top"><div class="wrap">
+   <div class="eyebrow" style="color:var(--goldL)">Casas de campo</div>
+   <h1 class="serif">Espacio, naturaleza y tranquilidad cerca de Lima.</h1>
+   <p style="color:#cfc9bd;margin-top:8px;max-width:62ch">Cieneguilla, Pachacámac, Chaclacayo y Santa Eulalia — casas con jardín, aire limpio y clima cálido, ideales para descansar, vivir o invertir a pocos minutos de la ciudad.</p>
+ </div></section>
+ <section style="background:var(--cream)"><div class="wrap">
+   <div class="result-bar"><div class="cnt"><b>${list.length}</b> propiedades de campo</div><button class="btn btn-outline" onclick="go('#/propiedades')">Ver todo el catálogo →</button></div>
+   <div class="pgrid">${list.map(function(p){return propCard(p)}).join("")||'<p style="color:var(--muted);grid-column:1/-1;text-align:center;padding:50px 0">Muy pronto nuevas casas de campo. <a class="mini" onclick="go(\'#/contacto\')">Escríbenos</a></p>'}</div>
+ </div></section>
+ <section style="background:#fff;border-top:1px solid var(--line)"><div class="wrap" style="text-align:center;padding:14px 0">
+   <h2 class="serif" style="font-size:30px">¿Tienes una casa de campo?</h2>
+   <p style="color:var(--muted);margin-top:8px">Te ayudamos a venderla o alquilarla con la estrategia correcta.</p>
+   <div style="display:flex;gap:12px;justify-content:center;margin-top:18px"><button class="btn btn-gold" onclick="go('#/vende')">Solicitar valorización</button><a class="btn btn-outline" href="${WA_BOT}?text=${encodeURIComponent('Hola, me interesan las casas de campo.')}" target="_blank" rel="noopener">${I.wa} WhatsApp</a></div>
  </div></section>`+footer();
 }
 
@@ -673,6 +697,7 @@ function vCatalogo(){
    var v=null;
    if(h.indexOf('#/vende')===0) v=vVende();
    else if(h.indexOf('#/lima-top')===0) v=vLimaTop();
+   else if(h.indexOf('#/campo')===0) v=vCampo();
    else if(h.indexOf('#/asia')===0) v=vAsia();
    if(v!=null){ root.innerHTML=v+waFloat(); navScroll(); return; }
    return base();
