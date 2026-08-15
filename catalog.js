@@ -35,7 +35,8 @@ async function getCatalog(raw) {
   if (estadoCol) {
     const f = rows.filter((r) => {
       const v = String(r[estadoCol] || '').toLowerCase();
-      return v === '' || /(dispon|activ|public|venta|alquil)/.test(v);
+      // Mostrar todo salvo lo que ya no está en el mercado.
+      return !/(vendido|retirado|inactiv|archiv|elimin)/.test(v);
     });
     if (f.length) list = f;
   }
@@ -61,8 +62,8 @@ async function getCatalog(raw) {
     const cod = String(pick(r, cols, ['codigo', 'cod', 'id_propiedad', 'sku']) || ('P' + (idx + 1)));
     const tipo = String(pick(r, cols, ['tipo', 'tipo_propiedad', 'categoria']) || 'departamento').toLowerCase();
     const dist = pick(r, cols, ['distrito', 'dist', 'zona', 'ubicacion_distrito']) || '';
-    const venta = num(pick(r, cols, ['precio_venta', 'precio', 'venta', 'valor_venta', 'precio_usd']));
-    const alq = num(pick(r, cols, ['precio_alquiler', 'alquiler', 'alq', 'renta', 'precio_alquiler_usd']));
+    const venta = num(pick(r, cols, ['precio_venta_usd', 'precio_venta', 'precio', 'venta', 'valor_venta', 'precio_usd']));
+    const alq = num(pick(r, cols, ['precio_alquiler_usd', 'precio_alquiler', 'alquiler', 'alq', 'renta']));
     const operRaw = String(pick(r, cols, ['operacion', 'oper', 'tipo_operacion']) || '').toLowerCase();
     let oper = (operRaw.includes('alq') && operRaw.includes('vent')) ? 'venta_y_alquiler'
       : operRaw.includes('alq') ? 'alquiler'
@@ -76,28 +77,39 @@ async function getCatalog(raw) {
     else if (typeof featsRaw === 'string') feats = featsRaw.split(/[,;|\n]/).map((s) => cleanText(s)).filter(Boolean);
 
     const m = media[cod] || { foto: [], youtube: [] };
-    const video = (m.youtube && m.youtube[0]) || pick(r, cols, ['video', 'youtube', 'video_url']) || '';
+    const video = (m.youtube && m.youtube[0]) || pick(r, cols, ['video', 'youtube', 'video_url', 'url_tour_virtual']) || '';
+    // Fotos: primero las cargadas desde el admin; si no hay, intenta url_fotos del catálogo.
+    let fotos = (m.foto || []);
+    if (!fotos.length) {
+      const uf = pick(r, cols, ['url_fotos', 'fotos', 'imagenes']);
+      if (uf) {
+        try { const j = JSON.parse(uf); fotos = Array.isArray(j) ? j : String(uf).split(/[\n,;|]/); }
+        catch (e) { fotos = String(uf).split(/[\n,;|]/); }
+        fotos = fotos.map((s) => String(s).trim()).filter((s) => /^https?:\/\//.test(s));
+      }
+    }
 
     return {
       cod,
       tit: cleanText(pick(r, cols, ['titulo', 'tit', 'nombre', 'title']) || (tipo + ' en ' + dist)),
       dist,
-      dir: pick(r, cols, ['direccion', 'dir', 'ubicacion']) || dist,
+      dir: pick(r, cols, ['direccion_referencia', 'direccion', 'dir', 'ubicacion']) || dist,
       tipo,
       oper,
       dorm: num(pick(r, cols, ['dormitorios', 'dorm', 'habitaciones', 'cuartos'])),
       ban: num(pick(r, cols, ['banos', 'ban', 'baños', 'servicios_higienicos'])),
       est: num(pick(r, cols, ['estacionamientos', 'cocheras', 'est', 'garajes'])),
-      area: num(pick(r, cols, ['area', 'area_m2', 'metraje', 'area_total', 'm2', 'superficie'])),
+      area: num(pick(r, cols, ['area_total_m2', 'area_construida_m2', 'area', 'area_m2', 'metraje', 'area_total', 'm2', 'superficie'])),
+      areaC: num(pick(r, cols, ['area_construida_m2', 'area_techada_m2', 'area_construida'])),
       piso: pick(r, cols, ['piso', 'nivel']),
-      ant: num(pick(r, cols, ['antiguedad', 'ant', 'anos', 'años'])),
+      ant: num(pick(r, cols, ['antiguedad_anios', 'antiguedad', 'ant', 'anos', 'años'])),
       vista: pick(r, cols, ['vista']) || '',
       venta, alq,
       consultar: !venta && !alq,
       desc: cleanText(descSrc),
       descOverride: ovr[cod] || '',
       feats,
-      fotos: (m.foto || []),
+      fotos,
       video,
       scene: deriveScene(tipo, dist),
       dest: destSet ? destSet.has(cod) : idx < 6,
